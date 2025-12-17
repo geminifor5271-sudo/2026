@@ -10,6 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#050505">
     <link rel="manifest" href="manifest.json">
+    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23050505%22/><text y=%22.9em%22 font-size=%2280%22>🏎️</text></svg>">
 
     <style>
@@ -30,83 +31,79 @@
             margin: 0; background: var(--bg); color: var(--text-p);
             font-family: 'Inter', -apple-system, system-ui, sans-serif;
             height: 100dvh; display: flex; flex-direction: column;
-            overflow: hidden; /* 防止整體橡皮筋回彈，增加 App 感 */
+            overflow: hidden;
         }
 
         /* 頂部看板 */
         .app-header {
-            padding: calc(var(--safe-top) + 10px) 20px 15px;
+            padding: calc(var(--safe-top) + 15px) 20px 15px;
             background: linear-gradient(to bottom, #250505, var(--bg));
             flex-shrink: 0;
+            z-index: 10;
         }
-        .app-header h1 { margin: 0; font-size: 22px; font-weight: 900; font-style: italic; }
+        .app-header h1 { margin: 0; font-size: 24px; font-weight: 900; font-style: italic; letter-spacing: -1px; }
         .app-header h1 span { color: var(--primary); }
 
-        /* 日期選擇器 */
+        /* 主導航分頁控制 */
+        .page-container {
+            flex: 1; position: relative; width: 100%; overflow: hidden;
+        }
+        .main-page {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+        .main-page.active { display: flex; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 行程頁專用樣式 */
         .day-nav {
             display: flex; gap: 10px; padding: 10px 20px;
             overflow-x: auto; scrollbar-width: none; flex-shrink: 0;
         }
         .day-nav::-webkit-scrollbar { display: none; }
         .day-tab {
-            flex: 0 0 auto; padding: 8px 16px; border-radius: 12px;
+            flex: 0 0 auto; padding: 10px 20px; border-radius: 12px;
             background: var(--surface); color: var(--text-s);
             font-size: 13px; font-weight: 700; transition: 0.2s;
         }
-        .day-tab.active { background: var(--primary); color: white; }
+        .day-tab.active { background: var(--primary); color: white; transform: scale(1.05); }
 
-        /* 主內容區 */
-        .app-main {
-            flex: 1; overflow-y: auto; padding: 10px 20px;
+        .scroll-content {
+            flex: 1; overflow-y: auto; padding: 10px 20px 100px;
             -webkit-overflow-scrolling: touch;
         }
 
-        .page { display: none; animation: pageIn 0.3s ease-out; }
-        .page.active { display: block; }
-        @keyframes pageIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
-
         /* 時間軸列表組件 */
-        .timeline-item {
-            display: flex; gap: 15px; margin-bottom: 20px;
-            position: relative;
-        }
-        .timeline-line {
-            position: absolute; left: 19px; top: 30px; bottom: -20px;
-            width: 2px; background: #2c2c2e;
-        }
+        .timeline-item { display: flex; gap: 15px; margin-bottom: 20px; position: relative; }
+        .timeline-line { position: absolute; left: 19px; top: 30px; bottom: -20px; width: 2px; background: #2c2c2e; }
         .timeline-item:last-child .timeline-line { display: none; }
-
-        .time-mark {
-            flex: 0 0 40px; text-align: center;
-        }
+        .time-mark { flex: 0 0 40px; text-align: center; }
         .time-text { font-size: 11px; font-weight: 800; color: var(--text-s); }
-        .time-dot {
-            width: 10px; height: 10px; background: #333; border-radius: 50%;
-            margin: 8px auto; border: 2px solid var(--bg); z-index: 1; position: relative;
-        }
+        .time-dot { width: 10px; height: 10px; background: #333; border-radius: 50%; margin: 8px auto; border: 2px solid var(--bg); z-index: 1; position: relative; }
         .timeline-item.active .time-dot { background: var(--primary); box-shadow: 0 0 10px var(--primary); }
         .timeline-item.active .time-text { color: var(--primary); }
 
         .info-card {
-            flex: 1; background: var(--surface); padding: 16px; border-radius: 16px;
+            flex: 1; background: var(--surface); padding: 18px; border-radius: 20px;
             display: flex; justify-content: space-between; align-items: center;
-            border: 1px solid rgba(255,255,255,0.03);
-            transition: 0.1s;
+            border: 1px solid rgba(255,255,255,0.03); transition: 0.1s;
         }
         .info-card:active { transform: scale(0.97); background: #1a1a1c; }
-
         .card-body h3 { margin: 0; font-size: 16px; font-weight: 700; }
-        .card-body p { margin: 4px 0 0; font-size: 12px; color: var(--text-s); }
-        .card-arrow { color: #333; font-size: 18px; }
+        .card-body p { margin: 6px 0 0; font-size: 12px; color: var(--text-s); }
+
+        /* 賽道頁專用樣式 */
+        .track-map { width: 100%; border-radius: 20px; background: #222; margin-bottom: 20px; position: relative; overflow: hidden; }
+        .track-img { width: 100%; display: block; filter: grayscale(1) invert(1); opacity: 0.7; }
 
         /* 底部導航欄 */
         .bottom-nav {
-            background: rgba(18, 18, 18, 0.95);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid #222;
-            display: flex; justify-content: space-around;
-            padding: 10px 0 calc(5px + var(--safe-bottom));
-            flex-shrink: 0;
+            background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(20px);
+            border-top: 1px solid #222; display: flex; justify-content: space-around;
+            padding: 10px 0 calc(8px + var(--safe-bottom)); flex-shrink: 0;
+            position: fixed; bottom: 0; width: 100%; z-index: 100;
         }
         .nav-btn {
             background: none; border: none; color: var(--text-s);
@@ -114,101 +111,111 @@
             font-size: 10px; font-weight: 600; width: 25%;
         }
         .nav-btn.active { color: var(--primary); }
-        .nav-icon { font-size: 20px; }
+        .nav-icon { font-size: 22px; }
 
-        /* 彈出視窗 (App Sheet) */
+        /* 詳情抽屜 (Sheet) */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 1500; animation: fadeIn 0.2s; }
         #detail-sheet {
-            position: fixed; bottom: -100%; left: 0; width: 100%; height: 60%;
-            background: #1c1c1e; border-radius: 25px 25px 0 0;
+            position: fixed; bottom: -100%; left: 0; width: 100%; height: 75%;
+            background: #1c1c1e; border-radius: 30px 30px 0 0;
             z-index: 2000; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            padding: 30px 20px;
+            padding: 40px 25px;
         }
         #detail-sheet.open { bottom: 0; }
-        .sheet-handle {
-            width: 40px; height: 4px; background: #333; border-radius: 2px;
-            position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
-        }
-        .overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); display: none; z-index: 1500;
-        }
+        .sheet-handle { width: 40px; height: 5px; background: #333; border-radius: 3px; position: absolute; top: 15px; left: 50%; transform: translateX(-50%); }
+
+        .btn-close { width: 100%; padding: 18px; border-radius: 16px; border: none; background: #2c2c2e; color: white; font-weight: bold; margin-top: 30px; font-size: 16px; }
+        .btn-close:active { background: #3a3a3c; }
+
     </style>
 </head>
 <body>
 
     <header class="app-header">
-        <h1>SHANGHAI <span>GP</span></h1>
+        <h1 id="header-title">SHANGHAI <span>GP</span></h1>
     </header>
 
-    <div class="day-nav">
-        <div class="day-tab active" onclick="switchDay('d1', this)">12 Thu</div>
-        <div class="day-tab" onclick="switchDay('d2', this)">13 Fri</div>
-        <div class="day-tab" onclick="switchDay('d3', this)">14 Sat</div>
-        <div class="day-tab" onclick="switchDay('d4', this)">15 Sun</div>
-        <div class="day-tab" onclick="switchDay('d5', this)">16 Mon</div>
-    </div>
-
-    <main class="app-main">
-        <div id="d1" class="page active">
-            <div class="timeline-item active">
-                <div class="timeline-line"></div>
-                <div class="time-mark">
-                    <div class="time-text">09:00</div>
-                    <div class="time-dot"></div>
-                </div>
-                <div class="info-card" onclick="openSheet('啟程：台北 ➔ 上海', '建議選擇松山機場直飛虹橋機場，節省約1.5小時進城時間。')">
-                    <div class="card-body">
-                        <h3>啟程：台北 ➔ 上海</h3>
-                        <p>TSA to SHA • 預計 12:45 抵達</p>
-                    </div>
-                    <div class="card-arrow">❯</div>
-                </div>
+    <div class="page-container">
+        
+        <div id="page-schedule" class="main-page active">
+            <div class="day-nav">
+                <div class="day-tab active" onclick="switchDay('d1', this)">12 Thu</div>
+                <div class="day-tab" onclick="switchDay('d2', this)">13 Fri</div>
+                <div class="day-tab" onclick="switchDay('d3', this)">14 Sat</div>
+                <div class="day-tab" onclick="switchDay('d4', this)">15 Sun</div>
+                <div class="day-tab" onclick="switchDay('d5', this)">16 Mon</div>
             </div>
-
-            <div class="timeline-item">
-                <div class="timeline-line"></div>
-                <div class="time-mark">
-                    <div class="time-text">15:00</div>
-                    <div class="time-dot"></div>
+            <div class="scroll-content" id="schedule-list">
                 </div>
-                <div class="info-card" onclick="openSheet('飯店 Check-in', '推薦入住靜安寺區域，方便搭乘地鐵2號與11號線。')">
-                    <div class="card-body">
-                        <h3>飯店 Check-in</h3>
-                        <p>靜安區 • 交通樞紐重心</p>
-                    </div>
-                    <div class="card-arrow">❯</div>
-                </div>
-            </div>
         </div>
 
-        <div id="d2" class="page">
-            <div class="timeline-item active">
-                <div class="timeline-line"></div>
-                <div class="time-mark">
-                    <div class="time-text">10:30</div>
-                    <div class="time-dot"></div>
+        <div id="page-track" class="main-page">
+            <div class="scroll-content">
+                <div class="track-map">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.formula1.com/en/racing/2024/China.html" alt="Track" class="track-img" style="height: 200px; object-fit: contain; padding: 20px;">
+                    <p style="text-align: center; font-size: 12px; color: #8e8e93;">上海國際賽車場 (SIC)</p>
+                </div>
+                <h2>交通指引</h2>
+                <div class="info-card" style="margin-bottom:15px">
+                    <div class="card-body">
+                        <h3>地鐵 11 號線</h3>
+                        <p>直達「上海賽車場」站，出站即達賽車場水景廣場。</p>
+                    </div>
                 </div>
                 <div class="info-card">
                     <div class="card-body">
-                        <h3>F1 自由練習 FP1</h3>
-                        <p>上賽道 • 首次賽道適應</p>
+                        <h3>建議出發時間</h3>
+                        <p>正賽日建議提前 3 小時出發，避免 11 號線擁擠。</p>
                     </div>
                 </div>
             </div>
         </div>
-    </main>
+
+        <div id="page-food" class="main-page">
+            <div class="scroll-content">
+                <h2>上海必吃</h2>
+                <div class="info-card" style="margin-bottom:15px">
+                    <div class="card-body">
+                        <h3>小籠包：佳家湯包</h3>
+                        <p>黃河路總店，推薦蟹粉鮮肉小籠。</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="card-body">
+                        <h3>本幫菜：老吉士</h3>
+                        <p>天平路老店，需提前預約紅燒肉。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-settings" class="main-page">
+            <div class="scroll-content">
+                <h2>系統設定</h2>
+                <div class="info-card" style="margin-bottom:15px" onclick="haptic(50)">
+                    <div class="card-body">
+                        <h3>觸覺回饋</h3>
+                        <p>已針對 S24 Ultra 線性馬達優化</p>
+                    </div>
+                    <div style="color:var(--primary)">ON</div>
+                </div>
+                <p style="text-align: center; color: #333; margin-top: 40px;">Version 1.2.0 (Stable)</p>
+            </div>
+        </div>
+
+    </div>
 
     <nav class="bottom-nav">
-        <button class="nav-btn active" onclick="haptic()">
+        <button class="nav-btn active" onclick="switchMainPage('schedule', this)">
             <span class="nav-icon">🗓️</span>行程
         </button>
-        <button class="nav-btn" onclick="haptic()">
+        <button class="nav-btn" onclick="switchMainPage('track', this)">
             <span class="nav-icon">🏎️</span>賽道
         </button>
-        <button class="nav-btn" onclick="haptic()">
+        <button class="nav-btn" onclick="switchMainPage('food', this)">
             <span class="nav-icon">🍔</span>美食
         </button>
-        <button class="nav-btn" onclick="haptic()">
+        <button class="nav-btn" onclick="switchMainPage('settings', this)">
             <span class="nav-icon">⚙️</span>設定
         </button>
     </nav>
@@ -216,27 +223,87 @@
     <div class="overlay" id="overlay" onclick="closeSheet()"></div>
     <div id="detail-sheet">
         <div class="sheet-handle"></div>
-        <h2 id="sheet-title" style="margin-top:10px">詳情內容</h2>
-        <p id="sheet-body" style="color:var(--text-s); line-height:1.6"></p>
-        <button onclick="closeSheet()" style="width:100%; padding:15px; border-radius:12px; border:none; background:var(--primary); color:white; font-weight:bold; margin-top:20px">關閉</button>
+        <div id="sheet-content">
+            <h2 id="sheet-title">詳情內容</h2>
+            <p id="sheet-body" style="color:var(--text-s); line-height:1.8; font-size: 15px;"></p>
+        </div>
+        <button class="btn-close" onclick="closeSheet()">了解更多</button>
     </div>
 
     <script>
-        function haptic() {
-            // S24U 的線性馬達觸感回饋
-            if (navigator.vibrate) navigator.vibrate(12);
+        const scheduleData = {
+            d1: [
+                { time: '09:00', title: '啟程：台北 ➔ 上海', desc: 'TSA 松山 ➔ SHA 虹橋', detail: '建議選擇松山機場出發，虹橋機場進市區僅需 20 分鐘地鐵，比浦東機場節省極多時間。' },
+                { time: '15:00', title: '飯店 Check-in', desc: '靜安寺區域飯店', detail: '推薦入住靜安香格里拉或璞麗，處於 2 號線與 7 號線交會，無論去賽場或外灘都方便。' },
+                { time: '19:00', title: '外灘散步 & 晚餐', desc: '外灘源區域', detail: '觀賞浦東陸家嘴夜景，晚餐建議預約外灘 18 號或周邊本幫菜。' }
+            ],
+            d2: [
+                { time: '11:30', title: '自由練習 FP1', desc: '上海國際賽車場', detail: '這是賽車首次上軌道測試，建議在看台觀察 1-3 號組合彎的過彎動態。' },
+                { time: '15:30', title: '自由練習 FP2', desc: '上海國際賽車場', detail: '各隊將進行長距離測試（Long Run），是觀察正賽節奏的最佳時機。' }
+            ],
+            d3: [
+                { time: '11:30', title: '自由練習 FP3', desc: '最後調整階段', detail: '車隊將針對排位賽進行極限單圈設定。' },
+                { time: '15:00', title: '排位賽 Qualifying', desc: '決定正賽起跑順位', detail: '上海站的排位賽極其關鍵，特別是長直道前的最後一個彎角出彎速度。' }
+            ],
+            d4: [
+                { time: '13:00', title: '車手巡遊', desc: '全場致意', detail: '近距離捕捉 20 位車手坐在古董車上巡場的畫面。' },
+                { time: '15:00', title: '上海站正賽 Race', desc: '56 圈激烈對決', detail: '注意 14 號彎的大腳煞車超車點，這裡通常是整場比賽戰火最猛烈的地方。' }
+            ],
+            d5: [
+                { time: '10:00', title: '武康路文青漫步', desc: '徐匯區老建築', detail: '離開上海前，來武康大樓拍張照，並在周邊武康路享受法租界的優閒早午餐。' },
+                { time: '16:00', title: '前往機場', desc: '返回台北', detail: '虹橋機場建議提前 2 小時抵達，完成退稅與免稅品取貨。' }
+            ]
+        };
+
+        function haptic(ms = 12) {
+            if (navigator.vibrate) navigator.vibrate(ms);
+        }
+
+        function switchMainPage(id, btn) {
+            haptic(15);
+            document.querySelectorAll('.main-page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + id).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // 更新標題
+            const titles = { schedule: 'SHANGHAI GP', track: 'CIRCUIT', food: 'CUISINE', settings: 'SETTINGS' };
+            document.getElementById('header-title').innerHTML = titles[id] === 'SHANGHAI GP' ? 'SHANGHAI <span>GP</span>' : titles[id];
+            
+            if (id === 'schedule') renderSchedule('d1');
+        }
+
+        function renderSchedule(day) {
+            const container = document.getElementById('schedule-list');
+            const data = scheduleData[day];
+            container.innerHTML = data.map((item, idx) => `
+                <div class="timeline-item ${idx === 0 ? 'active' : ''}">
+                    <div class="timeline-line"></div>
+                    <div class="time-mark">
+                        <div class="time-text">${item.time}</div>
+                        <div class="time-dot"></div>
+                    </div>
+                    <div class="info-card" onclick="openSheet('${item.title}', '${item.detail}')">
+                        <div class="card-body">
+                            <h3>${item.title}</h3>
+                            <p>${item.desc}</p>
+                        </div>
+                        <div style="color:#333">❯</div>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function switchDay(dayId, btn) {
-            haptic();
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            haptic(10);
             document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(dayId).classList.add('active');
             btn.classList.add('active');
+            renderSchedule(dayId);
         }
 
         function openSheet(title, body) {
-            haptic();
+            haptic(20);
             document.getElementById('sheet-title').innerText = title;
             document.getElementById('sheet-body').innerText = body;
             document.getElementById('detail-sheet').classList.add('open');
@@ -247,6 +314,10 @@
             document.getElementById('detail-sheet').classList.remove('open');
             document.getElementById('overlay').style.display = 'none';
         }
+
+        // 初始化
+        window.onload = () => renderSchedule('d1');
+
     </script>
 </body>
 </html>
