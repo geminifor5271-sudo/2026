@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>F1 Shanghai 2026</title>
     
     <link rel="manifest" href="manifest.json">
@@ -20,12 +20,22 @@
             --accent: #00d2ff;
         }
 
-        body {
+        /* 核心解決方案 1：禁用文字選取，防止彈出 Google 查詢 */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* 核心解決方案 2：禁止下拉重整 */
+        html, body {
+            overscroll-behavior-y: contain;
+            height: 100%;
             margin: 0; padding: 0;
             background-color: var(--bg);
             color: var(--text);
             font-family: 'Segoe UI', Roboto, sans-serif;
-            overflow-x: hidden;
+            overflow: hidden; /* 防止全域滾動影響 */
         }
 
         header {
@@ -33,12 +43,18 @@
             padding: 15px;
             text-align: center;
             border-bottom: 2px solid var(--primary);
-            position: sticky; top: 0; z-index: 100;
         }
 
         header h1 { margin: 0; font-size: 18px; letter-spacing: 2px; color: var(--primary); }
 
-        .page { display: none; padding: 20px; padding-bottom: 100px; animation: fadeIn 0.3s ease; }
+        /* 獨立滾動區域：解決行程消失與內容顯示問題 */
+        .content-container {
+            height: calc(100% - 130px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .page { display: none; padding: 20px; animation: fadeIn 0.2s ease; }
         .active { display: block; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -51,85 +67,97 @@
             border-left: 4px solid var(--primary);
         }
 
-        .weather-card { border-left-color: var(--accent); background: linear-gradient(145deg, #151515, #0a1a20); }
+        /* 自訂行程輸入框 */
+        .my-schedule-input {
+            width: 100%;
+            padding: 12px;
+            background: #222;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 8px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        .btn-add {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .user-item {
+            background: #222;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 8px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
 
         .nav-bar {
             position: fixed; bottom: 0; width: 100%;
             background: rgba(10, 10, 10, 0.95);
             display: flex; justify-content: space-around;
-            padding: 12px 0; border-top: 1px solid #333;
+            padding: 12px 0 25px 0; border-top: 1px solid #333;
             backdrop-filter: blur(10px);
         }
 
-        .nav-item {
-            color: var(--text-s); text-decoration: none;
-            font-size: 11px; text-align: center; cursor: pointer;
-        }
-
+        .nav-item { color: var(--text-s); text-align: center; font-size: 11px; flex: 1; }
         .nav-item.active-nav { color: var(--primary); font-weight: bold; }
         .nav-icon { font-size: 18px; display: block; margin-bottom: 4px; }
-
-        .badge {
-            display: inline-block; padding: 2px 8px; border-radius: 4px;
-            font-size: 10px; font-weight: bold; margin-bottom: 8px;
-        }
     </style>
 </head>
 <body>
 
 <header><h1>SHANGHAI GP 2026</h1></header>
 
-<div id="home" class="page active">
-    <div class="card weather-card">
-        <div class="badge" style="background: var(--accent); color: #000;">LIVE WEATHER</div>
-        <h3 id="temp">載入氣溫中...</h3>
-        <p id="weather-desc">正在讀取上海賽車場氣象資料...</p>
-        <p id="tire-tip" style="color: #00ff00; font-weight: bold;"></p>
+<div class="content-container">
+    <div id="home" class="page active">
+        <div class="card" style="border-left-color: var(--accent);">
+            <h3 id="temp">🌡️ --°C</h3>
+            <p id="weather-desc">讀取氣象資料中...</p>
+            <p id="tire-tip" style="color: #00ff00; font-weight: bold; font-size: 12px;"></p>
+        </div>
+        <div class="card">
+            <h3>🏁 距離正賽起跑</h3>
+            <h2 id="countdown">計算中...</h2>
+        </div>
     </div>
 
-    <div class="card">
-        <div class="badge" style="background: var(--primary); color: white;">COUNTDOWN</div>
-        <h3>🏁 距離正賽起跑</h3>
-        <h2 id="countdown">計算中...</h2>
+    <div id="schedule" class="page">
+        <div class="card">
+            <h3 style="color: gold;">⭐ 我的專屬行程</h3>
+            <input type="text" id="scheduleInput" class="my-schedule-input" placeholder="例：14:00 K看台集合...">
+            <button class="btn-add" onclick="addUserSchedule()">新增行程</button>
+            <div id="userList"></div>
+        </div>
+        <div class="card">
+            <h3>官方賽程時程</h3>
+            <p>04/17 | 15:30 Sprint Shootout</p>
+            <p>04/18 | 11:00 Sprint Race</p>
+            <p>04/19 | 15:00 Grand Prix</p>
+        </div>
     </div>
-</div>
 
-<div id="schedule" class="page">
-    <div class="card">
-        <div class="badge" style="background: #fff; color: #000;">APRIL 17 FRI</div>
-        <h3>衝刺排位賽日</h3>
-        <p>11:30 | FP1 自由練習</p>
-        <p>15:30 | Sprint Shootout</p>
+    <div id="map" class="page">
+        <div class="card">
+            <h3>📍 K 看台 (T14 髮夾彎)</h3>
+            <p>最佳超車點，需從地鐵 3 號口步行 20 分鐘。</p>
+        </div>
+        
     </div>
-    <div class="card">
-        <div class="badge" style="background: #fff; color: #000;">APRIL 18 SAT</div>
-        <h3>衝刺賽與大賽排位</h3>
-        <p>11:00 | Sprint Race</p>
-        <p>15:00 | Qualifying</p>
-    </div>
-    <div class="card">
-        <div class="badge" style="background: var(--primary); color: #fff;">APRIL 19 SUN</div>
-        <h3>正賽 Grand Prix</h3>
-        <p>15:00 | Race (56 Laps)</p>
-    </div>
-</div>
 
-<div id="map" class="page">
-    <div class="card">
-        <div class="badge" style="background: gold; color: #000;">K STAND GUIDE</div>
-        <h3>📍 K 看台 (T14 髮夾彎)</h3>
-        <p>此處為賽道最強煞車點，時速由 320 降至 80 km/h。</p>
-        <p>🚇 出口：上海賽車場站 3 號口，沿伊寧路步行。</p>
-    </div>
-    
-</div>
-
-<div id="settings" class="page">
-    <div class="card">
-        <h3>⚙️ App 資訊</h3>
-        <p>自動更新：已開啟</p>
-        <p>天氣數據源：Open-Meteo</p>
-        <p>版本：v3.0 Final Stable</p>
+    <div id="settings" class="page">
+        <div class="card">
+            <h3>⚙️ App 資訊</h3>
+            <p>已停用系統選取與手勢重整</p>
+            <p>版本：v3.5 Professional</p>
+        </div>
     </div>
 </div>
 
@@ -138,7 +166,7 @@
         <span class="nav-icon">🏠</span>首頁
     </div>
     <div class="nav-item" onclick="showPage('schedule')" id="nav-schedule">
-        <span class="nav-icon">📅</span>賽程
+        <span class="nav-icon">📅</span>行程
     </div>
     <div class="nav-item" onclick="showPage('map')" id="nav-map">
         <span class="nav-icon">🗺️</span>賽道
@@ -149,60 +177,77 @@
 </nav>
 
 <script>
-    // 1. 頁面切換
+    // 1. 頁面切換：現在不會因為顯示問題讓行程消失
     function showPage(pageId) {
         document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
         const target = document.getElementById(pageId);
         if (target) target.style.display = 'block';
 
         document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active-nav');
-            if (item.id === 'nav-' + pageId) item.classList.add('active-nav');
+            item.classList.toggle('active-nav', item.id === 'nav-' + pageId);
         });
     }
 
-    // 2. 獲取即時天氣 (上海賽車場座標: 31.33, 121.22)
+    // 2. 天氣 API 串接
     async function updateWeather() {
         try {
             const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=31.33&longitude=121.22&current_weather=true&hourly=precipitation_probability');
             const data = await res.json();
-            const temp = data.current_weather.temperature;
-            const rainProb = data.hourly.precipitation_probability[0];
-
-            document.getElementById('temp').innerText = `${temp}°C`;
-            document.getElementById('weather-desc').innerText = `目前降雨機率：${rainProb}%`;
-
-            let tire = "建議使用：🔴 軟胎/乾地胎";
-            if(rainProb > 30 && rainProb < 60) tire = "建議預備：🟢 半雨胎 (Intermediate)";
-            if(rainProb >= 60) tire = "建議使用：🔵 全雨胎 (Wet)";
-            document.getElementById('tire-tip').innerText = tire;
+            document.getElementById('temp').innerText = `🌡️ ${data.current_weather.temperature}°C`;
+            const prob = data.hourly.precipitation_probability[0];
+            document.getElementById('weather-desc').innerText = `上海賽車場降雨機率：${prob}%`;
+            document.getElementById('tire-tip').innerText = prob > 30 ? "⚠️ 建議準備雨具與雨胎" : "🟢 賽道乾燥，適合乾地胎";
         } catch (e) {
-            document.getElementById('temp').innerText = "暫時無法獲取";
+            document.getElementById('temp').innerText = "天氣載入失敗";
         }
     }
 
     // 3. 倒數計時
     function updateCountdown() {
         const raceDate = new Date('2026-04-19T15:00:00').getTime();
-        const now = new Date().getTime();
-        const diff = raceDate - now;
-        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const diff = raceDate - new Date().getTime();
+        const d = Math.floor(diff / 86400000);
+        const h = Math.floor((diff % 86400000) / 3600000);
         document.getElementById('countdown').innerText = `${d}天 ${h}小時`;
     }
 
-    // 4. 初始化
+    // 4. 行程互動功能：儲存在手機本地記憶體 (LocalStorage)
+    function addUserSchedule() {
+        const input = document.getElementById('scheduleInput');
+        if (!input.value) return;
+        const schedules = JSON.parse(localStorage.getItem('f1_schedules') || '[]');
+        schedules.push(input.value);
+        localStorage.setItem('f1_schedules', JSON.stringify(schedules));
+        input.value = '';
+        renderSchedules();
+    }
+
+    function renderSchedules() {
+        const list = document.getElementById('userList');
+        const schedules = JSON.parse(localStorage.getItem('f1_schedules') || '[]');
+        list.innerHTML = schedules.map((s, i) => `
+            <div class="user-item">
+                <span>${s}</span>
+                <span onclick="deleteSchedule(${i})" style="color:red">✕</span>
+            </div>
+        `).join('');
+    }
+
+    function deleteSchedule(index) {
+        const schedules = JSON.parse(localStorage.getItem('f1_schedules') || '[]');
+        schedules.splice(index, 1);
+        localStorage.setItem('f1_schedules', JSON.stringify(schedules));
+        renderSchedules();
+    }
+
+    // 5. 初始化
     window.addEventListener('load', () => {
         updateWeather();
         updateCountdown();
-        setInterval(updateCountdown, 60000);
-        
-        // 清除舊 Service Worker 避免快取問題
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(regs => {
-                for(let reg of regs) reg.unregister();
-            });
-        }
+        renderSchedules();
+        showPage('home');
+        // 定時自動更新天氣 (每 30 分鐘)，無需手動重整
+        setInterval(updateWeather, 1800000);
     });
 </script>
 </body>
