@@ -1,7 +1,8 @@
 {
-  "name": "F1SH2026",
+  "name": "F1 Shanghai 2026",
   "short_name": "F1 Shanghai",
   "start_url": "index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#050505",
   "theme_color": "#ff1e00",
@@ -10,7 +11,13 @@
       "src": "icon.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
