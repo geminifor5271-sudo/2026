@@ -141,96 +141,61 @@
     </div>
 
     <script>
-        // 強制清除舊有的 PWA 快取與註冊資訊
+// 1. 強制註銷舊的 Service Worker (確保 App 保持最新狀態)
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for(let registration of registrations) {
-            registration.unregister();
-        }
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+        for(let reg of registrations) reg.unregister();
     });
 }
 
-        let isHapticOn = true;
-        // 衝刺賽週末賽程邏輯
-        const scheduleData = {
-            d1: [{ time: '13:00', title: '抵達上海', icon: '🇨🇳', detail: '建議飯店：靜安或嘉定區。', tags: ['台胞證'] }],
-            d2: [
-                { time: '11:30', title: '自由練習 FP1', icon: '🏎️', detail: '衝刺賽週末唯一一節練習，車隊會進行密集的設定測試。', tags: ['練習賽'] },
-                { time: '15:30', title: '衝刺排位賽 Sprint Shootout', icon: '⏱️', detail: '決定週六衝刺賽的起跑順位。規則更嚴格，使用輪胎強制規定。', tags: ['衝刺賽'] }
-            ],
-            d3: [
-                { time: '11:00', title: '衝刺賽 Sprint Race', icon: '🏁', detail: '100公里的短程衝刺，前八名有積分。不需強制進站。', tags: ['衝刺賽', '積分'] },
-                { time: '15:00', title: '排位賽 Qualifying', icon: '⏱️', detail: '決定週日正賽起跑順位。K 看台看排位賽非常過癮，可以看到車手推向極限。', tags: ['正賽排位'] }
-            ],
-            d4: [
-                { time: '15:00', title: '上海站正賽 Race', icon: '🏆', detail: '56 圈正賽。14 號彎（K看台前）是 DRS 超車區終點，絕對是決戰地。', tags: ['正賽'] }
-            ],
-            d5: [{ time: '11:00', title: '外灘遊覽 / 返程', icon: '🛫', detail: '準備前往機場。', tags: ['支付寶'] }]
-        };
+// 2. 設定變數
+let isHapticOn = true;
 
-        function haptic(ms) { if (isHapticOn && navigator.vibrate) navigator.vibrate(ms); }
-        function toggleHaptic() {
-            isHapticOn = !isHapticOn;
-            document.getElementById('haptic-toggle').checked = isHapticOn;
-            document.getElementById('haptic-status').innerText = `狀態：${isHapticOn ? '開啟' : '已關閉'}`;
-            if(isHapticOn) haptic(30);
-        }
+// 3. 模擬 F1 機械震動感的函數 (專為 S24 Ultra 優化)
+function haptic(type) {
+    if (!isHapticOn || !navigator.vibrate) return;
+    const patterns = {
+        'click': 15,          // 輕微觸感
+        'gear': [10, 30, 15], // 模擬 F1 換檔
+        'alert': [60, 100, 60] // 強力提醒
+    };
+    navigator.vibrate(patterns[type] || 20);
+}
 
-        function nav(id, btn) {
-            haptic(15);
-            document.querySelectorAll('.main-page').forEach(p => p.classList.remove('active'));
-            document.getElementById('page-' + id).classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
+// 4. 頁面切換功能
+function showPage(pageId) {
+    // 執行震動回饋
+    haptic('click');
+    
+    // 隱藏所有頁面，顯示點選的頁面
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    const targetPage = document.getElementById(pageId);
+    if (targetPage) targetPage.style.display = 'block';
 
-        function renderDayNav() {
-            const days = { d1: '12 Thu', d2: '13 Fri', d3: '14 Sat', d4: '15 Sun', d5: '16 Mon' };
-            document.getElementById('day-nav').innerHTML = Object.entries(days).map(([key, label]) => 
-                `<div class="day-tab ${key === 'd1' ? 'active' : ''}" onclick="switchDay('${key}', this)">${label}</div>`
-            ).join('');
-        }
+    // 更新下方導航列按鈕的顏色 (假設你的按鈕 class 是 nav-item)
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.style.color = (item.getAttribute('onclick').includes(pageId)) ? '#ff1e00' : '#888';
+    });
+}
 
-        function switchDay(dayId, btn) {
-            haptic(10);
-            document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
-            btn.classList.add('active');
-            renderEvents(dayId);
-        }
+// 5. K 看台觀賽小撇步 (14 號彎專屬)
+function loadKTips() {
+    const tipBox = document.getElementById('k-stand-tips');
+    if (tipBox) {
+        tipBox.innerHTML = `
+            <div style="background:#1a1a1a; padding:15px; border-radius:10px; border-left:4px solid #ff1e00;">
+                <h4 style="margin:0">🏎️ K 看台現場攻略</h4>
+                <p style="font-size:14px; color:#ccc;">這裡是 DRS 區終點，最容易發生超車！建議注意看 14 彎的入彎點。步行建議：由 11 號線上海賽車場站 3 號口步行約 20 分鐘。</p>
+            </div>
+        `;
+    }
+}
 
-        function renderEvents(day) {
-            const list = document.getElementById('schedule-list');
-            const events = scheduleData[day] || [];
-            list.innerHTML = events.map(e => `
-                <div class="info-card" onclick="openSheet('${e.title}', '${e.detail}', '${e.tags}')">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <span style="font-size:11px; font-weight:800; color:var(--primary)">${e.time}</span>
-                            <h3 style="margin:5px 0">${e.icon} ${e.title}</h3>
-                            <div style="display:flex">${e.tags.map(t => `<span class="tag ${t.includes('衝刺')?'tag-sprint':''}">${t}</span>`).join('')}</div>
-                        </div>
-                        <div style="color:#333">❯</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function openSheet(title, detail, tags) {
-            haptic(20);
-            document.getElementById('sheet-content').innerHTML = `
-                <h2 style="margin-bottom:20px">${title}</h2>
-                <div style="line-height:1.8; color:#ccc; font-size:16px">${detail}</div>
-            `;
-            document.getElementById('detail-sheet').classList.add('open');
-            document.querySelector('.overlay').style.display = 'block';
-        }
-
-        function closeSheet() {
-            document.getElementById('detail-sheet').classList.remove('open');
-            document.querySelector('.overlay').style.display = 'none';
-        }
-
-        window.onload = () => { renderDayNav(); renderEvents('d1'); };
-    </script>
+// 6. 網頁載入後執行的動作
+window.onload = () => {
+    showPage('home'); // 預設顯示首頁
+    loadKTips();      // 載入 K 看台攻略
+};
+</script>
 </body>
 </html>
