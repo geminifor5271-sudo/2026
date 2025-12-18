@@ -141,6 +141,15 @@
     </div>
 
     <script>
+        // 強制清除舊有的 PWA 快取與註冊資訊
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+            registration.unregister();
+        }
+    });
+}
+
         let isHapticOn = true;
         // 衝刺賽週末賽程邏輯
         const scheduleData = {
