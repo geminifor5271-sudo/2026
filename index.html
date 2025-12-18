@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>F1 SHANGHAI 2026</title>
+    <title>F1 SHANGHAI K-STAND</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,46 +12,36 @@
     
     <style>
         :root {
-            --bg: #050505; --surface: #121212; --on-surface: #1c1c1e;
+            --bg: #050505; --surface: #121212;
             --primary: #ff1e00; --text-p: #ffffff; --text-s: #8e8e93;
-            --safe-bottom: env(safe-area-inset-bottom, 20px);
+            --k-color: #00d2ff;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); color: white; font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; display: flex; flex-direction: column; }
 
-        /* Header */
-        header { padding: 55px 20px 15px; background: linear-gradient(to bottom, #250505, var(--bg)); flex-shrink: 0; }
+        header { padding: 55px 20px 15px; background: linear-gradient(to bottom, #350505, var(--bg)); flex-shrink: 0; display: flex; justify-content: space-between; align-items: flex-end; }
         header h1 { margin: 0; font-size: 24px; font-weight: 900; font-style: italic; }
         header h1 span { color: var(--primary); }
+        .weather-chip { background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; font-size: 12px; display: flex; align-items: center; gap: 5px; border: 1px solid rgba(255,255,255,0.1); }
 
-        /* Pages */
         .page-container { flex: 1; position: relative; overflow: hidden; }
         .main-page { position: absolute; width: 100%; height: 100%; display: none; flex-direction: column; animation: fadeIn 0.3s ease; }
         .main-page.active { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Schedule Tabs */
         .day-nav { display: flex; gap: 10px; padding: 10px 20px; overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
         .day-tab { flex: 0 0 auto; padding: 10px 18px; border-radius: 12px; background: var(--surface); color: var(--text-s); font-size: 13px; font-weight: 700; }
         .day-tab.active { background: var(--primary); color: white; }
 
         .scroll-content { flex: 1; overflow-y: auto; padding: 10px 20px 120px; }
 
-        /* Cards */
         .info-card { background: var(--surface); padding: 18px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.03); }
-        .info-card:active { background: #1a1a1c; }
-        .card-body h3 { margin: 0; font-size: 16px; }
-        .card-body p { margin: 5px 0 0; font-size: 12px; color: var(--text-s); }
+        .tag { display: inline-block; padding: 3px 8px; border-radius: 5px; font-size: 10px; font-weight: 800; margin-right: 5px; margin-bottom: 5px; }
+        .tag-sprint { background: #673ab7; color: white; }
+        .tag-k { background: var(--k-color); color: black; }
 
-        /* Timeline Items */
-        .timeline-item { display: flex; gap: 15px; margin-bottom: 20px; position: relative; }
-        .time-mark { flex: 0 0 40px; text-align: center; font-size: 11px; font-weight: 800; color: var(--text-s); }
-        .time-dot { width: 10px; height: 10px; background: #333; border-radius: 50%; margin: 8px auto; border: 2px solid var(--bg); }
-        .timeline-item.active .time-dot { background: var(--primary); box-shadow: 0 0 10px var(--primary); }
-
-        /* Bottom Nav */
-        .bottom-nav { background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(20px); border-top: 1px solid #222; display: flex; padding: 10px 0 var(--safe-bottom); position: fixed; bottom: 0; width: 100%; }
+        .bottom-nav { background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(20px); border-top: 1px solid #222; display: flex; padding: 10px 0 env(safe-area-inset-bottom, 20px); position: fixed; bottom: 0; width: 100%; }
         .nav-btn { background: none; border: none; color: var(--text-s); flex: 1; display: flex; flex-direction: column; align-items: center; font-size: 10px; font-weight: 600; gap: 5px; }
         .nav-btn.active { color: var(--primary); }
 
@@ -59,14 +49,17 @@
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; z-index: 1500; }
         #detail-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; height: 80%; background: #1c1c1e; border-radius: 30px 30px 0 0; z-index: 2000; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); padding: 40px 25px; overflow-y: auto; }
         #detail-sheet.open { bottom: 0; }
-        .tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; margin-right: 5px; margin-bottom: 10px; }
-        .tag-red { background: rgba(255,30,0,0.2); color: var(--primary); }
-        .tag-blue { background: rgba(0,122,255,0.2); color: #007aff; }
+        .sheet-handle { width: 40px; height: 5px; background: #333; border-radius: 3px; position: absolute; top: 15px; left: 50%; transform: translateX(-50%); }
     </style>
 </head>
 <body>
 
-    <header><h1>SHANGHAI <span>GP</span></h1></header>
+    <header>
+        <h1>SHANGHAI <span>GP</span></h1>
+        <div class="weather-chip" onclick="window.open('https://www.windy.com/31.339/121.222?31.320,121.222,13', '_blank')">
+            <span>🌦️</span> <span id="temp-val">預報中心</span>
+        </div>
+    </header>
 
     <div class="page-container">
         <div id="page-schedule" class="main-page active">
@@ -76,36 +69,42 @@
 
         <div id="page-track" class="main-page">
             <div class="scroll-content">
-                <div class="info-card">
+                <div class="info-card" style="border-left: 5px solid var(--k-color);">
                     <div class="card-body">
-                        <span class="tag tag-red">⚠️ 安全檢查</span>
-                        <h3>安檢禁帶物品</h3>
-                        <p>禁止攜帶：專業相機腳架、超過 2 公升的液體、玻璃瓶、長柄雨傘、無人機、任何易燃物品。</p>
+                        <span class="tag tag-k">K 看台專屬</span>
+                        <h3>14 號彎超車點</h3>
+                        <p>K 看台位於長直道末端的髮夾彎，是全賽道最強煞車點，也是超車畫面最多的區域。</p>
                     </div>
                 </div>
                 <div class="info-card">
                     <div class="card-body">
-                        <span class="tag tag-blue">🪪 必要證件</span>
-                        <h3>觀賽身分核驗</h3>
-                        <p>上海 F1 採實名制。觀賽當天務必隨身攜帶 **台胞證正本**。現場僅刷證件進入，不接受截圖。</p>
+                        <h3>如何到達 K 看台？</h3>
+                        <p>從地鐵站出發後，K 看台位於賽場東側，步行距離約 15-20 分鐘。建議由 1 號或 2 號入口進場。</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="card-body">
+                        <span class="tag">🔭 建議</span>
+                        <h3>望遠鏡與拍攝</h3>
+                        <p>K 看台位置較高，可俯瞰整個長直道，建議攜帶望遠鏡觀察 DRS 開啟瞬間。</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="page-food" class="main-page">
+        <div id="page-pay" class="main-page">
             <div class="scroll-content">
-                <h2>支付工具準備</h2>
+                <h2>支付與通訊</h2>
                 <div class="info-card">
                     <div class="card-body">
-                        <h3>支付寶 / 微信支付</h3>
-                        <p>賽場內 99% 攤位不收現金。建議預先綁定台灣信用卡，並完成實名認證。</p>
+                        <h3>支付寶 / 微信實名</h3>
+                        <p>現場攤位不收現金，請確認已完成「證件上傳」實名認證，否則無法支付超過 200 元的金額。</p>
                     </div>
                 </div>
                 <div class="info-card">
                     <div class="card-body">
-                        <h3>地鐵：大都會 App</h3>
-                        <p>下載「不可或缺」。或直接在支付寶內搜尋「上海公眾交通乘車碼」。</p>
+                        <h3>賽場網路 (eSIM)</h3>
+                        <p>數萬人聚集會導致 5G 塞車，建議下載離線地圖，並將台胞證資訊截圖備份。</p>
                     </div>
                 </div>
             </div>
@@ -113,20 +112,14 @@
 
         <div id="page-settings" class="main-page">
             <div class="scroll-content">
-                <h2>App 設定</h2>
+                <h2>設定</h2>
+                <div class="info-card" onclick="location.reload()">
+                    <div class="card-body"><h3>檢查 App 更新</h3><p>抓取最新賽程與天氣連結</p></div>
+                </div>
                 <div class="info-card" onclick="toggleHaptic()">
                     <div class="card-body" style="display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <h3>觸覺回饋</h3>
-                            <p id="haptic-status">目前狀態：開啟 (震動 15ms)</p>
-                        </div>
+                        <div><h3>觸覺回饋</h3><p id="haptic-status">狀態：開啟</p></div>
                         <input type="checkbox" checked id="haptic-toggle">
-                    </div>
-                </div>
-                <div class="info-card" onclick="location.reload()">
-                    <div class="card-body">
-                        <h3>手動檢查更新</h3>
-                        <p>強制重新從 GitHub 抓取最新內容</p>
                     </div>
                 </div>
             </div>
@@ -134,9 +127,9 @@
     </div>
 
     <nav class="bottom-nav">
-        <button class="nav-btn active" onclick="nav('schedule', this)"><span>🗓️</span>行程</button>
-        <button class="nav-btn" onclick="nav('track', this)"><span>🏎️</span>賽道</button>
-        <button class="nav-btn" onclick="nav('food', this)"><span>💳</span>支付</button>
+        <button class="nav-btn active" onclick="nav('schedule', this)"><span>🗓️</span>賽程</button>
+        <button class="nav-btn" onclick="nav('track', this)"><span>🔭</span>K看台</button>
+        <button class="nav-btn" onclick="nav('pay', this)"><span>💳</span>支付</button>
         <button class="nav-btn" onclick="nav('settings', this)"><span>⚙️</span>設定</button>
     </nav>
 
@@ -144,29 +137,33 @@
     <div id="detail-sheet">
         <div class="sheet-handle"></div>
         <div id="sheet-content"></div>
-        <button onclick="closeSheet()" style="width:100%; padding:18px; border-radius:16px; border:none; background:#2c2c2e; color:white; font-weight:bold; margin-top:20px">關閉</button>
+        <button onclick="closeSheet()" style="width:100%; padding:18px; border-radius:16px; border:none; background:#2c2c2e; color:white; font-weight:bold; margin-top:20px">收起詳情</button>
     </div>
 
     <script>
         let isHapticOn = true;
+        // 衝刺賽週末賽程邏輯
         const scheduleData = {
-            d1: [
-                { time: '12:45', title: '抵達虹橋機場', icon: '🛫', detail: '支付建議：出關後第一件事在支付寶開啟「乘車碼」。<br>預估時間：下機到進市區約 60 分鐘。', tags: ['台胞證'] },
-                { time: '15:00', title: '飯店 Check-in', icon: '🏨', detail: '需出示台胞證供飯店辦理住宿登記（公安備案）。', tags: ['支付寶'] }
-            ],
+            d1: [{ time: '13:00', title: '抵達上海', icon: '🇨🇳', detail: '建議飯店：靜安或嘉定區。', tags: ['台胞證'] }],
             d2: [
-                { time: '10:00', title: '前往賽車場', icon: '🚇', detail: '交通：地鐵 11 號線。預估 60-90 分鐘。<br>安檢：進站需檢查隨身包袋。', tags: ['地鐵', '安檢'] },
-                { time: '11:30', title: 'FP1 練習賽', icon: '🏎️', detail: '建議攜帶耳塞、防曬乳。場內買水約 10-15 元人民幣。', tags: ['實名制'] }
-            ]
-            // ... 更多天數可自行擴充
+                { time: '11:30', title: '自由練習 FP1', icon: '🏎️', detail: '衝刺賽週末唯一一節練習，車隊會進行密集的設定測試。', tags: ['練習賽'] },
+                { time: '15:30', title: '衝刺排位賽 Sprint Shootout', icon: '⏱️', detail: '決定週六衝刺賽的起跑順位。規則更嚴格，使用輪胎強制規定。', tags: ['衝刺賽'] }
+            ],
+            d3: [
+                { time: '11:00', title: '衝刺賽 Sprint Race', icon: '🏁', detail: '100公里的短程衝刺，前八名有積分。不需強制進站。', tags: ['衝刺賽', '積分'] },
+                { time: '15:00', title: '排位賽 Qualifying', icon: '⏱️', detail: '決定週日正賽起跑順位。K 看台看排位賽非常過癮，可以看到車手推向極限。', tags: ['正賽排位'] }
+            ],
+            d4: [
+                { time: '15:00', title: '上海站正賽 Race', icon: '🏆', detail: '56 圈正賽。14 號彎（K看台前）是 DRS 超車區終點，絕對是決戰地。', tags: ['正賽'] }
+            ],
+            d5: [{ time: '11:00', title: '外灘遊覽 / 返程', icon: '🛫', detail: '準備前往機場。', tags: ['支付寶'] }]
         };
 
         function haptic(ms) { if (isHapticOn && navigator.vibrate) navigator.vibrate(ms); }
-
         function toggleHaptic() {
             isHapticOn = !isHapticOn;
             document.getElementById('haptic-toggle').checked = isHapticOn;
-            document.getElementById('haptic-status').innerText = `目前狀態：${isHapticOn ? '開啟 (震動 15ms)' : '已關閉'}`;
+            document.getElementById('haptic-status').innerText = `狀態：${isHapticOn ? '開啟' : '已關閉'}`;
             if(isHapticOn) haptic(30);
         }
 
@@ -180,8 +177,7 @@
 
         function renderDayNav() {
             const days = { d1: '12 Thu', d2: '13 Fri', d3: '14 Sat', d4: '15 Sun', d5: '16 Mon' };
-            const nav = document.getElementById('day-nav');
-            nav.innerHTML = Object.entries(days).map(([key, label]) => 
+            document.getElementById('day-nav').innerHTML = Object.entries(days).map(([key, label]) => 
                 `<div class="day-tab ${key === 'd1' ? 'active' : ''}" onclick="switchDay('${key}', this)">${label}</div>`
             ).join('');
         }
@@ -197,13 +193,14 @@
             const list = document.getElementById('schedule-list');
             const events = scheduleData[day] || [];
             list.innerHTML = events.map(e => `
-                <div class="timeline-item active" onclick="openSheet('${e.title}', '${e.detail}', '${e.tags}')">
-                    <div class="time-mark">${e.time}<div class="time-dot"></div></div>
-                    <div class="info-card">
-                        <div class="card-body">
-                            <h3>${e.icon} ${e.title}</h3>
-                            <p>${e.tags.map(t => '#' + t).join(' ')}</p>
+                <div class="info-card" onclick="openSheet('${e.title}', '${e.detail}', '${e.tags}')">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <span style="font-size:11px; font-weight:800; color:var(--primary)">${e.time}</span>
+                            <h3 style="margin:5px 0">${e.icon} ${e.title}</h3>
+                            <div style="display:flex">${e.tags.map(t => `<span class="tag ${t.includes('衝刺')?'tag-sprint':''}">${t}</span>`).join('')}</div>
                         </div>
+                        <div style="color:#333">❯</div>
                     </div>
                 </div>
             `).join('');
@@ -211,11 +208,9 @@
 
         function openSheet(title, detail, tags) {
             haptic(20);
-            const tagHtml = tags.split(',').map(t => `<span class="tag tag-red">${t}</span>`).join('');
             document.getElementById('sheet-content').innerHTML = `
-                ${tagHtml}
-                <h2 style="margin: 10px 0">${title}</h2>
-                <div style="line-height:1.6; color:#ccc; font-size:15px">${detail}</div>
+                <h2 style="margin-bottom:20px">${title}</h2>
+                <div style="line-height:1.8; color:#ccc; font-size:16px">${detail}</div>
             `;
             document.getElementById('detail-sheet').classList.add('open');
             document.querySelector('.overlay').style.display = 'block';
