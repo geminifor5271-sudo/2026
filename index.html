@@ -3,32 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SHANGHAI F1 PRIVATE GUIDE</title>
+    <title>SHANGHAI F1 PRO GUIDE</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#050505">
-    <link rel="manifest" href="manifest.json">
     
     <style>
         :root {
             --bg: #050505; --surface: #121212;
             --primary: #ff1e00; --text-p: #ffffff; --text-s: #8e8e93;
-            --accent: #28a745; --k-color: #00d2ff;
+            --accent: #28a745; --k-color: #00d2ff; --warn: #ffcc00;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); color: white; font-family: -apple-system, sans-serif; overflow: hidden; height: 100dvh; display: flex; flex-direction: column; }
+        /* 核心修改：全面禁止選取與長按彈出選單，增強 App 感 */
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+            -webkit-user-select: none; 
+            -webkit-touch-callout: none; /* 禁止長按彈出系統選單 */
+            user-select: none; 
+        }
 
-        /* Header */
+        body { margin: 0; background: var(--bg); color: white; font-family: -apple-system, sans-serif; overflow: hidden; height: 100dvh; display: flex; flex-direction: column; }
+        
         header { padding: 55px 20px 15px; background: linear-gradient(to bottom, #400000, var(--bg)); flex-shrink: 0; }
-        header h1 { margin: 0; font-size: 24px; font-style: italic; font-weight: 900; }
+        header h1 { margin: 0; font-size: 24px; font-style: italic; font-weight: 900; letter-spacing: -1px; }
         header h1 span { color: var(--primary); }
         .weather-container { display: flex; gap: 8px; margin-top: 10px; }
         .weather-tag { background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; font-size: 11px; border: 1px solid rgba(255,255,255,0.05); }
 
-        /* Pages */
         .page-container { flex: 1; position: relative; overflow: hidden; }
         .main-page { position: absolute; width: 100%; height: 100%; display: none; flex-direction: column; animation: fadeIn 0.3s ease; }
         .main-page.active { display: flex; }
@@ -36,32 +41,29 @@
 
         .scroll-content { flex: 1; overflow-y: auto; padding: 15px 20px 150px; }
 
-        /* Cards */
         .info-card { background: var(--surface); padding: 18px; border-radius: 20px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
         .info-card h3 { margin: 0 0 8px 0; font-size: 17px; display: flex; align-items: center; gap: 8px; }
         .info-card p { margin: 0 0 5px 0; font-size: 14px; color: var(--text-s); line-height: 1.5; }
         
         .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-bottom: 8px; }
-        .step-num { background: #333; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-right: 5px; }
+        .step-tag { background: #333; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 5px; }
 
-        /* Nav */
         .bottom-nav { background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(20px); border-top: 1px solid #222; display: flex; padding: 10px 0 env(safe-area-inset-bottom, 15px); position: fixed; bottom: 0; width: 100%; z-index: 1000; }
         .nav-btn { background: none; border: none; color: var(--text-s); flex: 1; display: flex; flex-direction: column; align-items: center; font-size: 10px; gap: 4px; font-weight: 600; }
         .nav-btn.active { color: var(--primary); }
 
-        /* Bottom Sheet */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; z-index: 1500; }
         #detail-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; height: 85%; background: #1c1c1e; border-radius: 25px 25px 0 0; z-index: 2000; transition: 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); padding: 35px 25px; overflow-y: auto; }
         #detail-sheet.open { bottom: 0; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; z-index: 1500; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>SHANGHAI <span>F1</span></h1>
+        <h1>SHANGHAI <span>F1</span> GUIDE</h1>
         <div class="weather-container">
-            <span class="weather-tag" id="w-city">🏨 靜安: 載入中</span>
-            <span class="weather-tag" id="w-track">🏎️ 賽場: 載入中</span>
+            <span class="weather-tag">🏨 靜安: 15°C 🌥️</span>
+            <span class="weather-tag">🏎️ 賽場: 13°C ☁️</span>
         </div>
     </header>
 
@@ -69,64 +71,47 @@
         <div id="page-arrival" class="main-page active">
             <div class="scroll-content">
                 <div class="info-card" onclick="openDriverCard()" style="border-left: 5px solid var(--accent);">
-                    <span class="tag" style="background:var(--accent); color:white;">🚕 落地司機專用</span>
+                    <span class="tag" style="background:var(--accent); color:white;">🚕 落地司機卡</span>
                     <h3>麗怡酒店 (上海火車站店)</h3>
-                    <p>點擊開啟大字地址，下飛機搭計程車直接秀給司機看。</p>
+                    <p>靜安區 恆豐路 638 號。點擊開啟大字卡。</p>
+                </div>
+
+                <div class="info-card" style="border-left: 5px solid var(--warn);">
+                    <h3>⚠️ 安全提醒 (火車站周邊)</h3>
+                    <p>人潮較雜，遇路邊招攬住宿、計程車請「不對視、不搭話、不回頭」，直奔飯店大廳或地鐵站。</p>
                 </div>
 
                 <div class="info-card">
-                    <h3>🛫 桃園機場 SOP</h3>
-                    <p><span class="step-num">1</span> 提早 3 小時抵達櫃檯。</p>
-                    <p><span class="step-num">2</span> 檢查台胞證隨身攜帶，不可託運。</p>
-                    <p><span class="step-num">3</span> 行動電源與電池必須隨身帶上飛機。</p>
-                </div>
-
-                <div class="info-card">
-                    <h3>📶 eSIM 網路設定</h3>
-                    <p>降落後開啟 eSIM 並進入設定打開「數據漫遊」。確認 LINE 正常即可使用。</p>
-                </div>
-
-                <div class="info-card">
-                    <h3>💳 支付備忘</h3>
-                    <p>主要使用「微信支付」。門票已連動微信與台胞證實名。現場不收現金。</p>
+                    <h3>🍱 上海必吃美食 (點擊可查)</h3>
+                    <p>• <b>小笼包</b> (小籠包)</p>
+                    <p>• <b>生煎包</b> (生煎包 - 推薦：小楊生煎)</p>
+                    <p>• <b>红烧肉</b> (紅燒肉 - 本幫菜經典)</p>
+                    <p>• <b>蝴蝶酥</b> (國際飯店排隊名產)</p>
                 </div>
             </div>
         </div>
 
         <div id="page-track" class="main-page">
             <div class="scroll-content">
-                <h2 style="color:var(--primary); margin-bottom:15px;">🏎️ K 看台轉乘指引</h2>
-
-                <div class="info-card" style="border-left: 5px solid #fff;">
-                    <span class="tag" style="background:#555">STEP 1</span>
-                    <h3>前往火車站地鐵站</h3>
-                    <p>出飯店左轉往火車站「北廣場」方向走，尋找地鐵 **3/4 號線**入口。</p>
+                <h3 style="margin-left: 5px;">🏎️ 賽事交通 (上賽道)</h3>
+                <div class="info-card">
+                    <p><span class="step-tag">1</span> 火車站北廣場進站 (3/4號線)。</p>
+                    <p><span class="step-tag">2</span> 搭 3 站至「曹楊路站」。</p>
+                    <p><span class="step-tag">3</span> 轉 11 號線往 <strong style="color:var(--primary)">花橋</strong> 方向。</p>
+                    <p><span class="step-tag">4</span> 「上海賽車場」6號出口。</p>
                 </div>
 
-                <div class="info-card" style="border-left: 5px solid #ffcc00;">
-                    <span class="tag" style="background:#ffcc00; color:black;">STEP 2</span>
-                    <h3>搭乘 3/4 號線</h3>
-                    <p>搭乘往「上海南站」或「中山公園」方向，坐 3 站到 **曹楊路站** 下車。</p>
-                </div>
-
-                <div class="info-card" style="border-left: 5px solid var(--primary);">
-                    <span class="tag" style="background:var(--primary)">STEP 3: 致命重點</span>
-                    <h3>11 號線轉乘</h3>
-                    <p>沿長廊走至 11 號線。月台務必確認搭乘往 <strong style="color:white; background:red; padding:0 4px;">「花橋」</strong> 方向列車。</p>
-                    <p style="color:#ffcc00; font-size:12px; margin-top:5px;">⚠️ 誤搭往「嘉定北」將無法抵達賽場！</p>
-                </div>
-
-                <div class="info-card" style="border-left: 5px solid var(--k-color);">
-                    <span class="tag" style="background:var(--k-color); color:black;">STEP 4</span>
-                    <h3>抵達賽場</h3>
-                    <p>於「上海賽車場」下車，由 **6 號出口** 出站直達水景廣場與 K 看台。</p>
+                <h3 style="margin-left: 5px;">🛍️ 休閒交通 (靜安寺)</h3>
+                <div class="info-card" style="border-left: 5px solid var(--warn);">
+                    <p><span class="step-tag">1</span> 1號線(往莘莊) 坐 1 站至「漢中路」。</p>
+                    <p><span class="step-tag">2</span> 轉 12 號線坐 2 站至「靜安寺」。</p>
+                    <p><strong>特色：</strong>高端百貨、久光超市、魔幻寺廟夜景。</p>
                 </div>
             </div>
         </div>
 
         <div id="page-schedule" class="main-page">
-            <div class="scroll-content" id="schedule-list">
-                </div>
+            <div class="scroll-content" id="schedule-list"></div>
         </div>
     </div>
 
@@ -139,18 +124,20 @@
     <div class="overlay" onclick="closeSheet()"></div>
     <div id="detail-sheet">
         <div id="sheet-content"></div>
-        <button onclick="closeSheet()" style="width:100%; padding:18px; border-radius:15px; border:none; background:#333; color:white; font-weight:bold; margin-top:20px">收起資訊</button>
+        <button onclick="closeSheet()" style="width:100%; padding:18px; border-radius:15px; background:#333; color:white; border:none; margin-top:20px; font-weight:bold;">關閉詳情</button>
     </div>
 
     <script>
         const scheduleData = [
-            { day: '3/12 Thu', time: '14:00', title: '抵達上海', detail: '從浦東機場搭車前往麗怡酒店，安置行李。' },
-            { day: '3/13 Fri', time: '11:30', title: '自由練習 FP1', detail: '唯一練習賽。K看台視角極佳，適合觀察煞車點。' },
-            { day: '3/13 Fri', time: '15:30', title: '衝刺排位賽', detail: '決定週六衝刺賽順位。' },
-            { day: '3/14 Sat', time: '11:00', title: '衝刺賽 Sprint', detail: '長直道末端 14 彎超車最頻繁時刻。' },
-            { day: '3/14 Sat', time: '15:00', title: '正賽排位賽', detail: '決定週日大賽起跑順位。' },
-            { day: '3/15 Sun', time: '15:00', title: '上海站正賽', detail: '56 圈正賽。請注意地鐵末班車人潮。' },
-            { day: '3/16 Mon', time: '11:00', title: '返程歸國', detail: '整理戰利品，提前 3 小時抵達機場。' }
+            { d: '3/12 Thu', t: '14:00', title: '抵達上海', info: 'Check-in 飯店，傍晚可去靜安寺逛久光百貨。' },
+            { d: '3/13 Fri', t: '11:30', title: '自由練習 FP1', info: '唯一的練習賽，K看台視野勘查。' },
+            { d: '3/13 Fri', t: '15:30', title: '衝刺排位賽', info: '決定週六衝刺賽位置。' },
+            { d: '3/14 Sat', d2: '衝刺賽日', items: [
+                { t: '11:00', title: '衝刺賽 Sprint' },
+                { t: '15:00', title: '正賽排位賽 Quali' }
+            ]},
+            { d: '3/15 Sun', t: '15:00', title: '上海站正賽', info: '56圈決戰。注意回程地鐵人潮管制。' },
+            { d: '3/16 Mon', t: '11:00', title: '整理返程', info: '最後採買，提早前往浦東機場。' }
         ];
 
         function nav(id, btn) {
@@ -158,27 +145,36 @@
             document.getElementById('page-' + id).classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            if(window.navigator.vibrate) navigator.vibrate(15);
+            if(window.navigator.vibrate) navigator.vibrate(10);
         }
 
         function renderSchedule() {
             const list = document.getElementById('schedule-list');
-            list.innerHTML = '<h2 style="margin-bottom:15px">🗓️ F1 衝刺賽週末程</h2>' + scheduleData.map(e => `
-                <div class="info-card">
-                    <span style="color:var(--primary); font-size:12px; font-weight:bold;">${e.day} ${e.time}</span>
-                    <h3 style="margin:5px 0;">${e.title}</h3>
-                    <p>${e.detail}</p>
-                </div>
-            `).join('');
+            let html = '<h2>🗓️ 3/12 - 3/16 賽程</h2>';
+            scheduleData.forEach(e => {
+                if(e.items) {
+                    html += `<div class="info-card"><span style="color:var(--primary); font-size:12px; font-weight:bold;">${e.d}</span>`;
+                    e.items.forEach(item => {
+                        html += `<h3 style="margin-top:10px;">${item.t} ${item.title}</h3>`;
+                    });
+                    html += `</div>`;
+                } else {
+                    html += `<div class="info-card">
+                        <span style="color:var(--primary); font-size:12px; font-weight:bold;">${e.d} ${e.t}</span>
+                        <h3>${e.title}</h3><p>${e.info}</p>
+                    </div>`;
+                }
+            });
+            list.innerHTML = html;
         }
 
         function openDriverCard() {
             const content = `
                 <div style="text-align:center;">
-                    <p style="color:#8e8e93; font-size:20px;">請帶我去：</p>
-                    <h1 style="font-size:42px; margin:15px 0; color:white; line-height:1.2;">丽怡酒店<br>(上海火车站店)</h1>
-                    <p style="font-size:24px; color:var(--primary); font-weight:bold;">静安区 恒丰路638号</p>
-                    <hr style="border:0; border-top:1px solid #333; margin:25px 0;">
+                    <p style="color:#8e8e93; font-size:18px;">請帶我去 (Please take me to):</p>
+                    <h1 style="font-size:48px; margin:20px 0; color:white; line-height:1.2;">丽怡酒店<br>(上海火车站店)</h1>
+                    <p style="font-size:26px; color:var(--primary); font-weight:bold;">静安区 恒丰路638号</p>
+                    <hr style="border:0; border-top:1px solid #333; margin:30px 0;">
                     <p style="color:#666;">(靠近：汉中路/上海火车站北广场)</p>
                 </div>
             `;
@@ -193,14 +189,7 @@
             document.querySelector('.overlay').style.display = 'none';
         }
 
-        async function initApp() {
-            renderSchedule();
-            // 模擬天氣資訊，連網時顯示
-            document.getElementById('w-city').innerText = "🏨 靜安: 16°C 🌥️";
-            document.getElementById('w-track').innerText = "🏎️ 賽場: 14°C ☁️";
-        }
-
-        window.onload = initApp;
+        window.onload = () => { renderSchedule(); };
     </script>
 </body>
 </html>
