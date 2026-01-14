@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SHANGHAI F1 PRO GUIDE</title>
+    <title>SHANGHAI F1 ULTIMATE</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,40 +14,47 @@
         :root {
             --bg: #050505; --surface: #121212;
             --primary: #ff1e00; --text-p: #ffffff; --text-s: #8e8e93;
-            --accent: #28a745; --k-color: #00d2ff; --warn: #ffcc00;
+            --accent: #28a745; --line-2: #009b63; --line-1: #ed1c24; --maglev: #ffcc00;
         }
 
-        /* 禁止選取但允許點擊 */
         * { 
             box-sizing: border-box; 
             -webkit-tap-highlight-color: transparent; 
             -webkit-user-select: none; 
+            -webkit-touch-callout: none;
             user-select: none; 
+            touch-action: manipulation;
         }
 
         body { margin: 0; background: var(--bg); color: white; font-family: -apple-system, sans-serif; overflow: hidden; height: 100dvh; display: flex; flex-direction: column; }
-        header { padding: 55px 20px 15px; background: linear-gradient(to bottom, #400000, var(--bg)); flex-shrink: 0; }
-        header h1 { margin: 0; font-size: 24px; font-style: italic; font-weight: 900; }
-        header h1 span { color: var(--primary); }
-        .weather-container { display: flex; gap: 8px; margin-top: 10px; }
-        .weather-tag { background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; font-size: 11px; }
-
+        
+        /* 頁面切換動畫 */
         .page-container { flex: 1; position: relative; overflow: hidden; }
-        .main-page { position: absolute; width: 100%; height: 100%; display: none; flex-direction: column; animation: fadeIn 0.3s ease; }
+        .main-page { position: absolute; width: 100%; height: 100%; display: none; flex-direction: column; animation: fadeIn 0.2s ease; }
         .main-page.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .scroll-content { flex: 1; overflow-y: auto; padding: 15px 20px 150px; }
-        .info-card { background: var(--surface); padding: 18px; border-radius: 20px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
-        .info-card h3 { margin: 0 0 8px 0; font-size: 17px; }
-        .info-card p { margin: 0 0 5px 0; font-size: 14px; color: var(--text-s); line-height: 1.5; }
+        .scroll-content { flex: 1; overflow-y: auto; padding: 55px 20px 150px; }
         
-        .food-item { padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; }
+        /* 任務卡片樣式 */
+        .task-card { background: var(--surface); border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .task-step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 20px; }
+        .step-num { width: 28px; height: 28px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; flex-shrink: 0; }
+        .step-content h4 { margin: 0 0 5px 0; font-size: 18px; color: #fff; }
+        .step-content p { margin: 0; font-size: 14px; color: var(--text-s); line-height: 1.5; }
+        
+        /* 視覺引導標籤 */
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; margin: 2px; }
+        .tag-maglev { background: var(--maglev); color: #000; }
+        .tag-l2 { background: var(--line-2); color: #fff; }
+        .tag-l1 { background: var(--line-1); color: #fff; }
 
+        /* 底部導航 */
         .bottom-nav { background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(20px); border-top: 1px solid #222; display: flex; padding: 10px 0 env(safe-area-inset-bottom, 15px); position: fixed; bottom: 0; width: 100%; z-index: 1000; }
-        .nav-btn { background: none; border: none; color: var(--text-s); flex: 1; display: flex; flex-direction: column; align-items: center; font-size: 10px; gap: 4px; }
+        .nav-btn { background: none; border: none; color: var(--text-s); flex: 1; display: flex; flex-direction: column; align-items: center; font-size: 10px; gap: 4px; font-weight: 600; }
         .nav-btn.active { color: var(--primary); }
 
+        /* 詳情彈窗 */
         #detail-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; height: 85%; background: #1c1c1e; border-radius: 25px 25px 0 0; z-index: 2000; transition: 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); padding: 35px 25px; overflow-y: auto; }
         #detail-sheet.open { bottom: 0; }
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; z-index: 1500; }
@@ -55,32 +62,20 @@
 </head>
 <body>
 
-    <header>
-        <h1>SHANGHAI <span>F1</span> GUIDE</h1>
-        <div class="weather-container">
-            <span class="weather-tag">🏨 靜安: 15°C 🌥️</span>
-            <span class="weather-tag">🏎️ 賽場: 13°C ☁️</span>
-        </div>
-    </header>
-
     <div class="page-container">
         <div id="page-arrival" class="main-page active">
             <div class="scroll-content">
-                <div class="info-card" onclick="openDriverCard()" style="border-left: 5px solid var(--accent);">
-                    <h3>🚕 點此開啟司機地址卡</h3>
-                    <p>麗怡酒店 (上海火車站店)</p>
+                <h2 style="font-style: italic;">WELCOME <span>TO SHANGHAI</span></h2>
+                <div class="task-card" onclick="openDriverCard()" style="background: linear-gradient(135deg, #1a1a1a, #0a0a0a); border: 1px solid var(--accent);">
+                    <h3 style="margin:0; color:var(--accent);">🚕 司機地址卡 (大字模式)</h3>
+                    <p style="margin:5px 0 0 0;">麗怡酒店 (上海火車站店)</p>
                 </div>
-
-                <div class="info-card">
-                    <h3>🍱 上海美食 (點擊查看詳情)</h3>
-                    <div class="food-item" onclick="openFood('小笼包', 'Xiaolongbao', '推薦點餐：蟹粉小籠、鮮肉小籠。知名店：鼎泰豐、佳家湯包。')">
-                        <span>小笼包 (小籠包)</span> <span>👉</span>
-                    </div>
-                    <div class="food-item" onclick="openFood('生煎馒头', 'Shengjian', '推薦店：小杨生煎 (連鎖店，火車站附近就有)。底部焦脆，內有湯汁。')">
-                        <span>生煎馒头 (生煎包)</span> <span>👉</span>
-                    </div>
-                    <div class="food-item" onclick="openFood('红烧肉', 'Braised Pork', '本幫菜靈魂。肥而不膩，口味偏甜。')">
-                        <span>红烧肉 (紅燒肉)</span> <span>👉</span>
+                
+                <div class="task-card">
+                    <h3>🍱 必吃美食 (點擊查看詳情)</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div onclick="openFood('小笼包', 'Xiaolongbao', '推薦：佳家湯包。點餐：鮮肉、蟹粉。')" style="background: #222; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between;"><span>小籠包</span><span>🥟 👉</span></div>
+                        <div onclick="openFood('涮羊肉', 'Shuan Yang Rou', '推薦：南門涮肉。點餐：手切鮮羊肉。')" style="background: #222; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between;"><span>涮羊肉 (火鍋)</span><span>🐑 👉</span></div>
                     </div>
                 </div>
             </div>
@@ -88,17 +83,53 @@
 
         <div id="page-track" class="main-page">
             <div class="scroll-content">
-                <div class="info-card" onclick="openFood('地鐵末班車', 'Last Train', '11號線上海賽車場站回市區末班車：<br>• 往迪士尼方向：22:15左右<br><br>請預留人潮管制排隊時間。')">
-                    <h3 style="color:var(--warn);">🚇 末班車資訊 (點擊)</h3>
-                    <p>回程請確保 21:30 前開始往地鐵站移動。</p>
+                <h2 style="font-style: italic;">ROUTE: <span>AIRPORT TO HOTEL</span></h2>
+                
+                <div class="task-card">
+                    <div class="task-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <h4>浦東機場 → 磁浮車站</h4>
+                            <p>領完行李上二樓，盯死黃色指標 <span class="tag tag-maglev">磁浮 Maglev</span>。走長廊約 5 分鐘。</p>
+                        </div>
+                    </div>
+
+                    <div class="task-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <h4>磁浮龍陽路站 → 轉地鐵</h4>
+                            <p>磁浮落車直接下樓出站。正對面就是地鐵站 <span class="tag tag-l2">4 號入口</span>。</p>
+                        </div>
+                    </div>
+
+                    <div class="task-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <h4>地鐵 2 號線 (乘車)</h4>
+                            <p>選 <span class="tag tag-l2">往徐涇東</span> 方向。搭 7 站到「人民廣場」。</p>
+                        </div>
+                    </div>
+
+                    <div class="task-step">
+                        <div class="step-num">4</div>
+                        <div class="step-content">
+                            <h4>人民廣場站 (大轉乘)</h4>
+                            <p>下車抬頭盯死紅色指標 <span class="tag tag-l1">1 號線</span>。走長廊約 5 分鐘，千萬別出站。</p>
+                        </div>
+                    </div>
+
+                    <div class="task-step" style="margin-bottom:0;">
+                        <div class="step-num">5</div>
+                        <div class="step-content">
+                            <h4>抵達火車站 → 飯店</h4>
+                            <p>下車找 <span style="color:#fff; font-weight:bold;">北廣場 / 5 號出口</span>。出站右手邊直走「恒豐路」3 分鐘即達。</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="info-card">
-                    <h3>🏎️ 往賽場路徑</h3>
-                    <p>火車站(3/4號線) → 曹楊路站 → 11號線(**往花橋**)。</p>
-                </div>
-                <div class="info-card">
-                    <h3>🛍️ 往靜安寺路徑</h3>
-                    <p>火車站(1號線) → 漢中路站 → 12號線(靜安寺)。</p>
+
+                <div class="task-card" style="border-left: 5px solid var(--warn);">
+                    <p style="color:var(--warn); font-weight:bold; margin-bottom:5px;">💡 台灣人實戰貼士</p>
+                    <p style="font-size:13px;">• 微信搜尋「乘車碼」小程式，磁浮地鐵都能刷。<br>• 地鐵進站包包一定要過 X 光機安檢。</p>
                 </div>
             </div>
         </div>
@@ -126,16 +157,15 @@
             document.getElementById('page-' + id).classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            window.scrollTo(0,0);
         }
 
         function openFood(title, pinyin, desc) {
             document.getElementById('sheet-content').innerHTML = `
-                <p style="color:var(--text-s); margin-bottom:5px;">${pinyin}</p>
-                <h1 style="font-size:36px; color:white; margin:0 0 20px 0;">${title}</h1>
-                <div style="font-size:18px; line-height:1.6; color:#ccc;">${desc}</div>
-                <div style="margin-top:30px; padding:15px; background:rgba(255,30,0,0.1); border-radius:10px; color:var(--primary); font-size:14px; text-align:center;">
-                    可直接向店員出示此畫面點餐
-                </div>
+                <p style="color:var(--text-s);">${pinyin}</p>
+                <h1 style="font-size:38px; color:white; margin:10px 0;">${title}</h1>
+                <p style="font-size:18px; line-height:1.6;">${desc}</p>
+                <div style="margin-top:20px; padding:15px; background:rgba(255,30,0,0.1); border-radius:12px; color:var(--primary); text-align:center;">可示示此畫面點餐</div>
             `;
             document.getElementById('detail-sheet').classList.add('open');
             document.querySelector('.overlay').style.display = 'block';
@@ -143,10 +173,11 @@
 
         function openDriverCard() {
             document.getElementById('sheet-content').innerHTML = `
-                <div style="text-align:center;">
-                    <p style="color:#8e8e93; font-size:18px;">請帶我去 (Please take me to):</p>
+                <div style="text-align:center; padding-top:20px;">
+                    <p style="color:#8e8e93; font-size:18px;">請帶我去 (Take me to):</p>
                     <h1 style="font-size:48px; margin:20px 0; color:white; line-height:1.2;">丽怡酒店<br>(上海火车站店)</h1>
                     <p style="font-size:26px; color:var(--primary); font-weight:bold;">静安区 恒丰路638号</p>
+                    <p style="color:#666; margin-top:30px;">(靠近北廣場 / 5號出口)</p>
                 </div>
             `;
             document.getElementById('detail-sheet').classList.add('open');
@@ -159,21 +190,19 @@
         }
 
         const scheduleData = [
-            { d: '3/12 Thu', t: '14:00', title: '抵達上海', info: '入住飯店，推薦去靜安寺逛逛。' },
-            { d: '3/13 Fri', t: '11:30', title: '自由練習 FP1', info: '唯一的練習賽。' },
-            { d: '3/13 Fri', t: '15:30', title: '衝刺排位賽', info: '決定週六順位。' },
-            { d: '3/14 Sat', t: '11:00', title: '衝刺賽 Sprint', info: '100公里激戰。' },
-            { d: '3/14 Sat', t: '15:00', title: '正賽排位賽', info: '決定週日順位。' },
-            { d: '3/15 Sun', t: '15:00', title: '上海站正賽', info: '56圈大賽。' },
-            { d: '3/16 Mon', t: '11:00', title: '整理返程', info: '前往機場回台。' }
+            { d: '3/13 Fri', t: '11:30', title: '自由練習 FP1' },
+            { d: '3/13 Fri', t: '15:30', title: '衝刺排位賽' },
+            { d: '3/14 Sat', t: '11:00', title: '衝刺賽 Sprint' },
+            { d: '3/14 Sat', t: '15:00', title: '正賽排位賽' },
+            { d: '3/15 Sun', t: '15:00', title: '上海站正賽' }
         ];
 
         window.onload = () => {
             const list = document.getElementById('schedule-list');
-            list.innerHTML = '<h2>🗓️ 週末賽程</h2>' + scheduleData.map(e => `
-                <div class="info-card">
-                    <span style="color:var(--primary); font-size:12px; font-weight:bold;">${e.d} ${e.t}</span>
-                    <h3>${e.title}</h3><p>${e.info}</p>
+            list.innerHTML = '<h2>🗓️ F1 WEEKEND</h2>' + scheduleData.map(e => `
+                <div class="task-card">
+                    <span style="color:var(--primary); font-weight:bold;">${e.d} ${e.t}</span>
+                    <h3 style="margin:5px 0;">${e.title}</h3>
                 </div>
             `).join('');
         };
